@@ -49,6 +49,7 @@ describe("Reentrance", function () {
       // Check balance before the attack
       expect(await attacker.getContractBalance()).to.be.equal(ONE_ETHER);
       
+      // Launch the attack and validate the attacker's balance in Ether.
       expect(
           await attacker.connect(hacker).attack(ONE_ETHER)
       ).to.changeEtherBalance(hacker, ethers.parseEther('21'));
