@@ -1,13 +1,10 @@
 # Sample Hardhat Project
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+This project demonstrates a basic reentrancy attack. We have the contract Victim.sol which is vulnerable to reentrancy attacks. The contract Attacker.sol is able to launch a reentrancy attack. 
 
-Try running some of the following tasks:
+To show how to perpetrate the attack we developed the test: Reentrancy.js
 
-```shell
-npx hardhat help
-npx hardhat test
-REPORT_GAS=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
-```
+We also developed the contract VictimCEI.sol. This contract implements the "Check - Effect - Interact" pattern to prevent reentrancy attacks. 
+
+To execute the attack run: npx hardhat test. 
+
