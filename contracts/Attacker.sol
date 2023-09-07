@@ -13,8 +13,7 @@ contract Attacker {
     uint256 public counter = 0;
     IVictim victim;
     address owner;
-    
-    
+        
     constructor(address _victim) payable {
         victim = IVictim(_victim);
         owner = msg.sender;

@@ -27,22 +27,32 @@ describe("Reentrance", function () {
     const VictimCEI = await ethers.getContractFactory("VictimCEI");
     const victimCEI = await VictimCEI.deploy({ value: TEN_ETHER});
 
+    // Deploy victim's contract
+    const VictimReGuard = await ethers.getContractFactory("VictimReentrancyGuard");
+    const victimReGuard = await VictimReGuard.deploy({ value: TEN_ETHER});
+
+    expect(await victim.getContractBalance()).to.be.equal(TEN_ETHER);
+    expect(await victimCEI.getContractBalance()).to.be.equal(TEN_ETHER);
+    expect(await victimReGuard.getContractBalance()).to.be.equal(TEN_ETHER);
+
     // Deploy attacker's contract
     const Attacker = await ethers.getContractFactory("Attacker");
     const attacker = await Attacker.connect(hacker).deploy(victim, { value: ONE_ETHER});
 
-     // Check balance before the attack
+     // Check the attacker's balance before the attack
     expect(await attacker.getContractBalance()).to.be.equal(ONE_ETHER);
-
-    await victimCEI.connect(user1).deposit({value: FIVE_ETHER});
-    await victimCEI.connect(user2).deposit({value: FIVE_ETHER});
-
-    expect(await victim.getContractBalance()).to.be.equal(TEN_ETHER);
 
     await victim.connect(user1).deposit({value: FIVE_ETHER});
     await victim.connect(user2).deposit({value: FIVE_ETHER});
 
-    return { victim, attacker, victimCEI, owner, user1, user2, hacker };
+    await victimCEI.connect(user1).deposit({value: FIVE_ETHER});
+    await victimCEI.connect(user2).deposit({value: FIVE_ETHER});
+
+    await victimReGuard.connect(user1).deposit({value: FIVE_ETHER});
+    await victimReGuard.connect(user2).deposit({value: FIVE_ETHER});
+
+
+    return { victim, attacker, victimCEI, victimReGuard, owner, user1, user2, hacker };
   }
 
   describe("Launch attack", function () {
@@ -70,7 +80,7 @@ describe("Reentrance", function () {
       const Attacker = await ethers.getContractFactory("Attacker");
       const attacker = await Attacker.connect(hacker).deploy(victimCEI, { value: ONE_ETHER});
 
-      expect(await victimCEI.getContractBalance()).to.be.equal(TWENTY_ETHER);
+      
 
       // Verify user's balance
       expect(await victimCEI.balances(user1)).to.be.equal(FIVE_ETHER);
@@ -82,7 +92,26 @@ describe("Reentrance", function () {
      
       expect(await victimCEI.getContractBalance()).to.be.equal(TWENTY_ETHER);
       expect(await attacker.getContractBalance()).to.be.equal(ONE_ETHER);
+    });
 
+    it("should not be allowed to attack Reentrancy Guard", async () => {
+      const { victimReGuard, owner, user1, user2, hacker } = await loadFixture(initFixture);
+
+      const Attacker = await ethers.getContractFactory("Attacker");
+      const attacker = await Attacker.connect(hacker).deploy(victimReGuard, { value: ONE_ETHER});
+
+      expect(await victimReGuard.getContractBalance()).to.be.equal(TWENTY_ETHER);
+
+      // Verify user's balance
+      expect(await victimReGuard.balances(user1)).to.be.equal(FIVE_ETHER);
+      expect(await victimReGuard.balances(user2)).to.be.equal(FIVE_ETHER);
+ 
+      // Launch the attack but it fails.
+      await expect(attacker.connect(hacker).attack(ONE_ETHER))
+        .to.be.revertedWith("failed to send ether!");
+     
+      expect(await victimReGuard.getContractBalance()).to.be.equal(TWENTY_ETHER);
+      expect(await attacker.getContractBalance()).to.be.equal(ONE_ETHER);
     });
   });
 

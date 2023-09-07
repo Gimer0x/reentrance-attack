@@ -1,7 +1,9 @@
 //SPDX-License-Identifier:MIT
 pragma solidity ^0.8.19;
 
-contract VictimCEI {
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+contract VictimReentrancyGuard is ReentrancyGuard{
     mapping(address => uint) public balances;
 
     constructor() payable {}
@@ -22,16 +24,17 @@ contract VictimCEI {
     }
     
 
-    // This function implements the Check - Effect - Interact Pattern
+    // This function implements the ReentrancyGuard library.
     function withdrawAll()
+        nonReentrant
         external
     {
         uint256 amount = balances[msg.sender];
         require( amount > 0, "contributions equals zero!");
 
-        balances[msg.sender] = 0;
-
         (bool status, ) = msg.sender.call{value: amount}("");
         require(status, "failed to send ether!");
+
+        balances[msg.sender] = 0;
     }
 }

@@ -1,6 +1,5 @@
 //SPDX-License-Identifier:MIT
 pragma solidity ^0.8.19;
-import "hardhat/console.sol";
 
 contract Victim {
     mapping(address => uint) public balances;
