@@ -1,4 +1,4 @@
-# Sample Hardhat Project
+# Sample - Reentrancy Attack
 
 This project demonstrates a basic reentrancy attack. We have the contract Victim.sol which is vulnerable to reentrancy attacks. The contract Attacker.sol is able to launch a reentrancy attack. 
 
